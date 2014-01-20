@@ -39,6 +39,12 @@ describe("mock promises", function() {
     }, 1);
   });
 
+  it("maintains that then is chainable", function() {
+    var promise = PromiseWrapper("chainThings");
+    var chainedReturn = promise.then(function () { }).then(function () {});
+    expect(chainedReturn).toBe(promise);
+  });
+
   describe("contracts", function() {
     var fulfilledHandler1, fulfilledHandler2, errorHandler, progressHandler, promise1, promise2;
     beforeEach(function() {
