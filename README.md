@@ -14,7 +14,7 @@ describe("my asynchronous code", function() {
         promisedValue = value;
     });
     promisedValue = "not foo";
-    jasmine.Promises.contracts.executeForPromise(promise);
+    jasmine.Promises.executeForPromise(promise);
     expect(promisedValue).toEqual("foo");
   });
 
@@ -29,7 +29,7 @@ describe("my asynchronous code", function() {
     promise2.then(function(value) {
       promisedValue2 = value;
     });
-    jasmine.Promises.contracts.executeForResolvedPromises();
+    jasmine.Promises.executeForResolvedPromises();
     expect(promisedValue1).toEqual("foo");
     expect(promisedValue2).toEqual("bar");
   });
@@ -48,10 +48,10 @@ describe("my asynchronous code", function() {
       outerPromisedValue = value;
     });
 
-    jasmine.Promises.contracts.executeForPromise(innerPromise);
+    jasmine.Promises.executeForPromise(innerPromise);
     expect(innerPromisedValue).toEqual("foo");
     expect(outerPromisedValue).toEqual("not resolved");
-    jasmine.Promises.contracts.executeForPromise(outerPromise);
+    jasmine.Promises.executeForPromise(outerPromise);
     expect(innerPromisedValue).toEqual("foo");
     expect(outerPromisedValue).toEqual("foobar");
   });

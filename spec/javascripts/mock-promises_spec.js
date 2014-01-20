@@ -83,7 +83,7 @@ describe("mock promises", function() {
           promisedValue = "also not foo";
         });
         promisedValue = "not foo";
-        jasmine.Promises.contracts.executeForPromise(promise1);
+        jasmine.Promises.executeForPromise(promise1);
         expect(promisedValue).toEqual("foo");
       });
 
@@ -92,8 +92,8 @@ describe("mock promises", function() {
         promise1.then(function(value) {
           promisedValue += value;
         });
-        jasmine.Promises.contracts.executeForPromise(promise1);
-        jasmine.Promises.contracts.executeForPromise(promise1);
+        jasmine.Promises.executeForPromise(promise1);
+        jasmine.Promises.executeForPromise(promise1);
         expect(promisedValue).toEqual("barfoo");
       });
 
@@ -111,10 +111,10 @@ describe("mock promises", function() {
           outerPromisedValue = value;
         });
 
-        jasmine.Promises.contracts.executeForPromise(innerPromise);
+        jasmine.Promises.executeForPromise(innerPromise);
         expect(innerPromisedValue).toEqual("foo");
         expect(outerPromisedValue).toEqual("not resolved");
-        jasmine.Promises.contracts.executeForPromise(outerPromise);
+        jasmine.Promises.executeForPromise(outerPromise);
         expect(innerPromisedValue).toEqual("foo");
         expect(outerPromisedValue).toEqual("foobar");
       });
@@ -126,7 +126,7 @@ describe("mock promises", function() {
         var unresolvedPromise = deferred.promise;
         var unresolvedSpy = jasmine.createSpy("unresolved");
         unresolvedPromise.then(unresolvedSpy);
-        jasmine.Promises.contracts.executeForResolvedPromises();
+        jasmine.Promises.executeForResolvedPromises();
         expect(fulfilledHandler1).toHaveBeenCalled();
         expect(fulfilledHandler2).toHaveBeenCalled();
         expect(unresolvedSpy).not.toHaveBeenCalled();
