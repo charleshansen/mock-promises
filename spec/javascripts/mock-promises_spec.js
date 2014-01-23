@@ -93,6 +93,28 @@ describe("mock promises", function() {
         expect(promisedValue).toEqual("foo");
       });
 
+      describe("failed promises", function() {
+        var deferred, brokenPromise, errorSpy, successSpy;
+        beforeEach(function() {
+          deferred = getDeferred();
+          brokenPromise = deferred.promise;
+          successSpy = jasmine.createSpy("success");
+          errorSpy = jasmine.createSpy("error");
+          deferred.reject("fail");
+        });
+        it("calls the fail handler if the promise is failed", function() {
+          brokenPromise.then(successSpy, errorSpy);
+          jasmine.Promises.executeForPromise(brokenPromise);
+          expect(successSpy).not.toHaveBeenCalled();
+          expect(errorSpy).toHaveBeenCalledWith("fail");
+        });
+        it("supports 'catch'", function() {
+          brokenPromise.catch(errorSpy);
+          jasmine.Promises.executeForPromise(brokenPromise);
+          expect(errorSpy).toHaveBeenCalledWith("fail");
+        });
+      });
+
       it("does not execute handlers more than once", function() {
         var promisedValue = "bar";
         promise1.then(function(value) {
