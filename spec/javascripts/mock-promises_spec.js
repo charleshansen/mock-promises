@@ -6,8 +6,8 @@ describe("mock promises", function() {
     getDeferred = function() {
       return Q.defer();
     };
-    jasmine.Promises.install(PromiseClass);
-    jasmine.Promises.contracts.reset();
+    mockPromises.install(PromiseClass);
+    mockPromises.contracts.reset();
   });
 
 
@@ -25,7 +25,7 @@ describe("mock promises", function() {
   });
 
   it("can be uninstalled", function(done) {
-    jasmine.Promises.uninstall();
+    mockPromises.uninstall();
 
     var promise = PromiseWrapper("foo");
     var promisedValue;
@@ -59,7 +59,7 @@ describe("mock promises", function() {
     });
     describe("all", function() {
       it("returns a list of promise/handler objects", function() {
-        expect(jasmine.Promises.contracts.all()).toEqual([
+        expect(mockPromises.contracts.all()).toEqual([
           jasmine.objectContaining({promise: promise1, fulfilledHandler: fulfilledHandler1, errorHandler: errorHandler, progressHandler: progressHandler}),
           jasmine.objectContaining({promise: promise2, fulfilledHandler: fulfilledHandler2})
         ]);
@@ -67,16 +67,16 @@ describe("mock promises", function() {
     });
     describe("forPromise", function() {
       it("returns a list of promise/handler objects only for the requested promise", function() {
-        expect(jasmine.Promises.contracts.forPromise(promise1)).toEqual([
+        expect(mockPromises.contracts.forPromise(promise1)).toEqual([
           jasmine.objectContaining({promise: promise1, fulfilledHandler: fulfilledHandler1, errorHandler: errorHandler, progressHandler: progressHandler})
         ]);
       });
     });
 
     it("can be reset", function() {
-      expect(jasmine.Promises.contracts.all().length).toBeGreaterThan(0);
-      jasmine.Promises.contracts.reset();
-      expect(jasmine.Promises.contracts.all().length).toEqual(0);
+      expect(mockPromises.contracts.all().length).toBeGreaterThan(0);
+      mockPromises.contracts.reset();
+      expect(mockPromises.contracts.all().length).toEqual(0);
     });
 
     describe("executeForPromise", function() {
@@ -89,7 +89,7 @@ describe("mock promises", function() {
           promisedValue = "also not foo";
         });
         promisedValue = "not foo";
-        jasmine.Promises.executeForPromise(promise1);
+        mockPromises.executeForPromise(promise1);
         expect(promisedValue).toEqual("foo");
       });
 
@@ -104,13 +104,13 @@ describe("mock promises", function() {
         });
         it("calls the fail handler if the promise is failed", function() {
           brokenPromise.then(successSpy, errorSpy);
-          jasmine.Promises.executeForPromise(brokenPromise);
+          mockPromises.executeForPromise(brokenPromise);
           expect(successSpy).not.toHaveBeenCalled();
           expect(errorSpy).toHaveBeenCalledWith("fail");
         });
         it("supports 'catch'", function() {
           brokenPromise.catch(errorSpy);
-          jasmine.Promises.executeForPromise(brokenPromise);
+          mockPromises.executeForPromise(brokenPromise);
           expect(errorSpy).toHaveBeenCalledWith("fail");
         });
       });
@@ -120,8 +120,8 @@ describe("mock promises", function() {
         promise1.then(function(value) {
           promisedValue += value;
         });
-        jasmine.Promises.executeForPromise(promise1);
-        jasmine.Promises.executeForPromise(promise1);
+        mockPromises.executeForPromise(promise1);
+        mockPromises.executeForPromise(promise1);
         expect(promisedValue).toEqual("barfoo");
       });
 
@@ -139,10 +139,10 @@ describe("mock promises", function() {
           outerPromisedValue = value;
         });
 
-        jasmine.Promises.executeForPromise(innerPromise);
+        mockPromises.executeForPromise(innerPromise);
         expect(innerPromisedValue).toEqual("foo");
         expect(outerPromisedValue).toEqual("not resolved");
-        jasmine.Promises.executeForPromise(outerPromise);
+        mockPromises.executeForPromise(outerPromise);
         expect(innerPromisedValue).toEqual("foo");
         expect(outerPromisedValue).toEqual("foobar");
       });
@@ -154,7 +154,7 @@ describe("mock promises", function() {
         var unresolvedPromise = deferred.promise;
         var unresolvedSpy = jasmine.createSpy("unresolved");
         unresolvedPromise.then(unresolvedSpy);
-        jasmine.Promises.executeForResolvedPromises();
+        mockPromises.executeForResolvedPromises();
         expect(fulfilledHandler1).toHaveBeenCalled();
         expect(fulfilledHandler2).toHaveBeenCalled();
         expect(unresolvedSpy).not.toHaveBeenCalled();
