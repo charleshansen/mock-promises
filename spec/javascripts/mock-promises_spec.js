@@ -6,7 +6,7 @@ function itImplementsContracts(PromiseLibrary) {
       PromiseClass = PromiseLibrary.PromiseClass;
       PromiseWrapper = PromiseLibrary.PromiseWrapper;
       getDeferred = PromiseLibrary.getDeferred;
-      PromiseClass = mockPromises.reconstruct(PromiseClass);
+      PromiseClass = mockPromises.getMockPromiseClass(PromiseClass);
       fulfilledHandler1 = jasmine.createSpy("fullfilled1");
       fulfilledHandler2 = jasmine.createSpy("fullfilled2");
       errorHandler = jasmine.createSpy("error");
@@ -190,7 +190,7 @@ describe("mock promises", function() {
     var nativeLibrary = {};
     beforeEach(function() {
       mockPromises.contracts.reset();
-      Promise = mockPromises.reconstruct(Promise);
+      Promise = mockPromises.getMockPromiseClass(Promise);
       nativeLibrary.PromiseClass = Promise;
       nativeLibrary.PromiseWrapper = function(value) {
         return new Promise(function(resolve) {
@@ -211,7 +211,7 @@ describe("mock promises", function() {
     });
 
     afterEach(function() {
-      Promise = mockPromises.deconstruct();
+      Promise = mockPromises.getOriginalPromiseClass();
       mockPromises.uninstall();
     });
 
