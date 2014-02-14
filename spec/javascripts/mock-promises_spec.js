@@ -1,53 +1,12 @@
-describe("mock promises", function() {
-  var PromiseClass, PromiseWrapper, getDeferred;
-  beforeEach(function() {
-    PromiseClass = Q.makePromise;
-    PromiseWrapper = Q;
-    getDeferred = function() {
-      return Q.defer();
-    };
-    mockPromises.install(PromiseClass);
-    mockPromises.contracts.reset();
-  });
-
-
-  it("does not allow normal promise resolution when mocking", function(done) {
-    var promise = PromiseWrapper("foo");
-    var promisedValue;
-    promise.then(function(value) {
-      promisedValue = value;
-    });
-    promisedValue = "not foo";
-    setTimeout(function() {
-      expect(promisedValue).toBe("not foo");
-      done();
-    }, 1);
-  });
-
-  it("can be uninstalled", function(done) {
-    mockPromises.uninstall();
-
-    var promise = PromiseWrapper("foo");
-    var promisedValue;
-    promise.then(function(value) {
-      promisedValue = value;
-    });
-    promisedValue = "not foo";
-    setTimeout(function() {
-      expect(promisedValue).toBe("foo");
-      done();
-    }, 1);
-  });
-
-  it("maintains that then is chainable", function() {
-    var promise = PromiseWrapper("chainThings");
-    var chainedReturn = promise.then(function () { }).then(function () {});
-    expect(chainedReturn).toBe(promise);
-  });
-
+function itImplementsContracts(PromiseLibrary) {
   describe("contracts", function() {
+    var PromiseClass, PromiseWrapper, getDeferred;
     var fulfilledHandler1, fulfilledHandler2, errorHandler, progressHandler, promise1, promise2;
     beforeEach(function() {
+      PromiseClass = PromiseLibrary.PromiseClass;
+      PromiseWrapper = PromiseLibrary.PromiseWrapper;
+      getDeferred = PromiseLibrary.getDeferred;
+      PromiseClass = mockPromises.reconstruct(PromiseClass);
       fulfilledHandler1 = jasmine.createSpy("fullfilled1");
       fulfilledHandler2 = jasmine.createSpy("fullfilled2");
       errorHandler = jasmine.createSpy("error");
@@ -160,5 +119,102 @@ describe("mock promises", function() {
         expect(unresolvedSpy).not.toHaveBeenCalled();
       });
     });
+
+    describe("valueForPromise", function() {
+      it("returns the value for resolved promises", function() {
+        expect(mockPromises.valueForPromise(promise1)).toEqual("foo");
+      });
+    });
+  });
+};
+
+describe("mock promises", function() {
+  describe("mocking Q", function() {
+    var QLibrary = {};
+    beforeEach(function() {
+      QLibrary.PromiseClass = Q.makePromise;
+      QLibrary.PromiseWrapper = Q;
+      QLibrary.getDeferred = function() {
+        return Q.defer();
+      };
+      mockPromises.install(QLibrary.PromiseClass);
+      mockPromises.contracts.reset();
+    });
+
+    afterEach(function() {
+      mockPromises.uninstall();
+    });
+
+    it("does not allow normal promise resolution when mocking", function(done) {
+      var promise = QLibrary.PromiseWrapper("foo");
+      var promisedValue;
+      promise.then(function(value) {
+        promisedValue = value;
+      });
+      promisedValue = "not foo";
+      setTimeout(function() {
+        expect(promisedValue).toBe("not foo");
+        done();
+      }, 1);
+    });
+
+    it("can be uninstalled", function(done) {
+      mockPromises.uninstall();
+
+      var promise = QLibrary.PromiseWrapper("foo");
+      var promisedValue;
+      promise.then(function(value) {
+        promisedValue = value;
+      });
+      promisedValue = "not foo";
+      setTimeout(function() {
+        expect(promisedValue).toBe("foo");
+        done();
+      }, 1);
+    });
+
+    it("maintains that then is chainable", function() {
+      var promise = QLibrary.PromiseWrapper("chainThings");
+      var chainedReturn = promise.then(function() {
+      }).then(function() {
+      });
+      expect(chainedReturn).toBe(promise);
+    });
+
+    itImplementsContracts(QLibrary);
+  });
+
+  describe("for native promises", function() {
+    var promise1;
+
+    var nativeLibrary = {};
+    beforeEach(function() {
+      mockPromises.contracts.reset();
+      Promise = mockPromises.reconstruct(Promise);
+      nativeLibrary.PromiseClass = Promise;
+      nativeLibrary.PromiseWrapper = function(value) {
+        return new Promise(function(resolve) {
+          resolve(value);
+        });
+      };
+      nativeLibrary.getDeferred = function() {
+        var deferred = {};
+        var promise = new Promise(function(resolve, reject) {
+          deferred.resolve = resolve;
+          deferred.reject = reject;
+        });
+        deferred.promise = promise;
+        return deferred;
+      };
+
+      promise1 = nativeLibrary.PromiseWrapper("foo");
+    });
+
+    afterEach(function() {
+      Promise = mockPromises.deconstruct();
+      mockPromises.uninstall();
+    });
+
+    itImplementsContracts(nativeLibrary);
   });
 });
