@@ -6,7 +6,7 @@ function itImplementsContracts(PromiseLibrary) {
       PromiseClass = PromiseLibrary.PromiseClass;
       PromiseWrapper = PromiseLibrary.PromiseWrapper;
       getDeferred = PromiseLibrary.getDeferred;
-      PromiseClass = mockPromises.getMockPromiseClass(PromiseClass);
+      PromiseClass = mockPromises.getMockPromise(PromiseClass);
       fulfilledHandler1 = jasmine.createSpy("fullfilled1");
       fulfilledHandler2 = jasmine.createSpy("fullfilled2");
       errorHandler = jasmine.createSpy("error");
@@ -126,7 +126,7 @@ function itImplementsContracts(PromiseLibrary) {
       });
     });
   });
-};
+}
 
 describe("mock promises", function() {
   describe("mocking Q", function() {
@@ -185,18 +185,14 @@ describe("mock promises", function() {
   });
 
   describe("for native promises", function() {
-    var promise1;
+    var promise1, promise2;
 
     var nativeLibrary = {};
     beforeEach(function() {
       mockPromises.contracts.reset();
-      Promise = mockPromises.getMockPromiseClass(Promise);
+      Promise = mockPromises.getMockPromise(Promise);
       nativeLibrary.PromiseClass = Promise;
-      nativeLibrary.PromiseWrapper = function(value) {
-        return new Promise(function(resolve) {
-          resolve(value);
-        });
-      };
+      nativeLibrary.PromiseWrapper = Promise.resolve
       nativeLibrary.getDeferred = function() {
         var deferred = {};
         var promise = new Promise(function(resolve, reject) {
@@ -208,13 +204,36 @@ describe("mock promises", function() {
       };
 
       promise1 = nativeLibrary.PromiseWrapper("foo");
+      promise2 = nativeLibrary.PromiseWrapper("bar");
     });
 
     afterEach(function() {
-      Promise = mockPromises.getOriginalPromiseClass();
+      Promise = mockPromises.getOriginalPromise();
       mockPromises.uninstall();
     });
 
     itImplementsContracts(nativeLibrary);
+
+    describe("Promises.all", function() {
+      it("resolves when all of the promises resolve", function() {
+        var allPromise = Promise.all([promise1, promise2]);
+        var thenSpy = jasmine.createSpy("then");
+        allPromise.then(thenSpy);
+        mockPromises.executeForPromise(promise1);
+        mockPromises.executeForPromise(promise2);
+        mockPromises.executeForPromise(allPromise);
+        expect(thenSpy).toHaveBeenCalledWith(["foo", "bar"]);
+      });
+    });
+
+    describe("Promise.reject", function() {
+      it("creates a rejected promise", function() {
+        var rejectedPromise = Promise.reject("wrong");
+        var failSpy = jasmine.createSpy("fail");
+        rejectedPromise.catch(failSpy);
+        mockPromises.executeForPromise(rejectedPromise);
+        expect(failSpy).toHaveBeenCalledWith("wrong");
+      });
+    });
   });
 });
