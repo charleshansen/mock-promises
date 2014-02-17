@@ -34,7 +34,7 @@ function itImplementsContracts(PromiseLibrary) {
 
     it("can be reset", function() {
       expect(mockPromises.contracts.all().length).toBeGreaterThan(0);
-      mockPromises.contracts.reset();
+      mockPromises.reset();
       expect(mockPromises.contracts.all().length).toEqual(0);
     });
 
@@ -148,7 +148,7 @@ describe("mock promises", function() {
         return Q.defer();
       };
       mockPromises.install(QLibrary.PromiseClass);
-      mockPromises.contracts.reset();
+      mockPromises.reset();
     });
 
     afterEach(function() {
@@ -199,7 +199,7 @@ describe("mock promises", function() {
 
     var nativeLibrary = {};
     beforeEach(function() {
-      mockPromises.contracts.reset();
+      mockPromises.reset();
       Promise = mockPromises.getMockPromise(Promise);
       nativeLibrary.PromiseClass = Promise;
       nativeLibrary.PromiseWrapper = Promise.resolve
