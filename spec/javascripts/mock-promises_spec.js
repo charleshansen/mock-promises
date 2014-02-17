@@ -120,6 +120,16 @@ function itImplementsContracts(PromiseLibrary) {
       });
     });
 
+    describe("executeForPromises", function() {
+      it("works for executes the given promises", function() {
+        promise1.then(fulfilledHandler1);
+        promise2.then(fulfilledHandler2);
+        mockPromises.executeForPromises([promise1, promise2]);
+        expect(fulfilledHandler1).toHaveBeenCalled();
+        expect(fulfilledHandler2).toHaveBeenCalled();
+      });
+    });
+
     describe("valueForPromise", function() {
       it("returns the value for resolved promises", function() {
         expect(mockPromises.valueForPromise(promise1)).toEqual("foo");
