@@ -1,60 +1,118 @@
-Expected Usage:
+#Mock Promises - Making the asynchronous feel synchronous in your tests.
+Mock Promises is a library for synchronously testing asynchronous javascript promises.  It is designed to feel similar to libraries for synchronously testing asynchronous http requests, such as [jasmine-ajax].
+
+##Supported Libraries
+Mock Promises was developed using the [Q] promise library and the [jasmine] testing framework.  There has been limited testing using native Promises in Chrome.  Mock Promises has no dependencies and should work with any framework.  If you would like to use Mock Promises for a library that is not supported, please open a github issue.
+
+##Installation
+Download [mock-promises.js] and add it to your project.  If you are using the jasmine gem, mock-promises.js needs to be in the src_files path in jasmine.yml.
+
+##Setup
+
+(These directions are for the Q library, or any libraries with a similar re-use of the `then` function.)
+
+To start mocking, use the `install` function.  The argument to `install` is the `Promise` class used by your promise library.  It happens to be `Q.makePromise` for Q.
 
 ```js
-describe("my asynchronous code", function() {
+mockPromises.install(Q.makePromise)
+```
+
+For Jasmine, it is recommended to put this is in the global `beforeEach` of your spec helper.  Any promises that are instantiated before you start mocking will not be mocked.
+
+To prevent test pollution, you should reset mocking between tests
+```js
+mockPromises.reset();
+```
+
+##Teardown
+To turn off mocking, use the `uninstall` function
+
+```js
+mockPromises.uninstall();
+```
+
+####With Native Promises
+If you are using Native promises, mock promises needs to mock out the constructor, which requires `getMockPromise`.  This method is doing a lot more than `install`, and is not complete.
+
+```js
+Promise = mockPromises.getMockPromise(Promise);
+```
+
+to turn off mock in this case, there is a `getOriginalPromise` method
+
+```js
+Promise = mockPromises.getOriginalPromise();
+```
+
+##API
+
+### install(PromiseClass)
+Starts mocking promises of the given Promise Class
+
+### uninstall()
+Stops mocking promises mocked by `install`
+
+### reset()
+Resets all [Contracts].
+
+### getMockPromise(PromiseClass)
+Returns a mocked version of PromiseClass; needed for mocking native promises
+
+### getOriginalPromise
+Returns the unmocked version of PromiseClass mocked by `getMockPromise`; needed for unmocking native promises
+
+###executeForPromise(mockedPromise)
+Executes all fulfillmentHandlers if the mocked promise is resolved. Executes all rejectionHandlers if the mocked promise is rejected. Will not execute handlers that have already been executed.
+
+###executeForPromises(mockedPromises)
+Calls `executeForPromise` on each mocked promise in the array of mocked promises, in order.
+
+###valueForPromise(mockedPromise)
+Returns the resolved value of the mocked promise without executing any of its callbacks.
+
+##<a id="Contracts"></a>Contracts
+
+Everytime `then` is called on a mocked promise, it generates a `contract` within mock promises.  A contract represents a promise and a set of handlers.  These are mostly used internally, but can be useful for debugging purposes.  
+
+### contracts.all()
+Returns an array of all available contracts.
+
+### contracts.forPromise(mockedPromise)
+Returns an array of all contracts associated with the mocked promise. 
+
+##Examples
+
+To see more detailed examples, look in [mock-promises_spec.js].  A simpler example is included below.
+
+```js
+describe("executeForPromise", function() {
+  var promise1, promise2;
   beforeEach(function() {
-    jasmine.Promises.install(Q.makePromise);
-    jasmine.Promises.contracts.reset();
+    mockPromises.install(Q.makePromise);
+    mockPromises.reset();
+    promise1 = Q("foo");
+    promise2 = Q("bar");
   });
-
-  it("resolves promises synchronously", function() {
-    var promise = Q("foo");
+  it("calls handlers for that promise synchronously", function() {
     var promisedValue;
-    promise.then(function(value) {
-        promisedValue = value;
-    });
-    promisedValue = "not foo";
-    jasmine.Promises.executeForPromise(promise);
-    expect(promisedValue).toEqual("foo");
-  });
-
-  it("can resolve a bunch of promises", function() {
-    var promise1 = Q("foo");
-    var promise2 = Q("bar");
-    var promisedValue1, promisedValue2;
-
     promise1.then(function(value) {
-      promisedValue1 = value;
+      promisedValue = value;
     });
     promise2.then(function(value) {
-      promisedValue2 = value;
+      promisedValue = value;
     });
-    jasmine.Promises.executeForResolvedPromises();
-    expect(promisedValue1).toEqual("foo");
-    expect(promisedValue2).toEqual("bar");
-  });
-
-  it("looks ok with nested promises", function() {
-    var innerPromise = Q("foo");
-    var outerPromisedValue = "not resolved";
-    var innerPromisedValue = "not resolved";
-    var deferred = Q.defer();
-    var outerPromise = deferred.promise;
-    innerPromise.then(function(value) {
-      innerPromisedValue = value;
-      deferred.resolve(value + "bar")
-    });
-    outerPromise.then(function(value) {
-      outerPromisedValue = value;
-    });
-
-    jasmine.Promises.executeForPromise(innerPromise);
-    expect(innerPromisedValue).toEqual("foo");
-    expect(outerPromisedValue).toEqual("not resolved");
-    jasmine.Promises.executeForPromise(outerPromise);
-    expect(innerPromisedValue).toEqual("foo");
-    expect(outerPromisedValue).toEqual("foobar");
+    promisedValue = "not foo";
+    mockPromises.executeForPromise(promise1);
+    expect(promisedValue).toEqual("foo");
   });
 });
-
 ```
+
+[Contracts]:#Contracts
+[jasmine]:https://github.com/pivotal/jasmine
+[jasmine-ajax]:https://github.com/pivotal/jasmine-ajax
+[mock-promises.js]:https://github.com/charleshansen/mock-promises/blob/master/lib/mock-promises.js
+[mock-promises_spec.js]:https://github.com/charleshansen/mock-promises/blob/master/spec/javascripts/mock-promises_spec.js
+[Q]:https://github.com/kriskowal/q
+[RSVP]:https://github.com/tildeio/rsvp.js/
+
