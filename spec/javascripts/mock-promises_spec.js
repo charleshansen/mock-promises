@@ -1,3 +1,5 @@
+//Tests require Jasmine 2.0+ due to the 'done' function
+
 function itImplementsContracts(PromiseLibrary) {
   describe("contracts", function() {
     var PromiseClass, PromiseWrapper, getDeferred;
