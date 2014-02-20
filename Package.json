@@ -1,0 +1,7 @@
+{
+  "name": "mock-promises",
+  "version": "0.0.1",
+  "scripts": {
+    "preinstall": "npm install -g mocha-server"
+  }
+}
