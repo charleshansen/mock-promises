@@ -1,14 +1,16 @@
-#Mock Promises - Making the asynchronous feel synchronous in your tests.
+#Mock Promises
 Mock Promises is a library for synchronously testing asynchronous javascript promises.  It is designed to feel similar to libraries for synchronously testing asynchronous http requests, such as [jasmine-ajax].
 
 ##Supported Libraries
-Mock Promises was developed using the [Q] promise library and the [jasmine] testing framework.  There has been limited testing using native Promises in Chrome.  Mock Promises has no dependencies and should work with any framework.  If you would like to use Mock Promises for a library that is not supported, please open a github issue.
+Mock Promises currently supports the [Q] promise library and native Promises in Chrome. More coming soon. If you would like to use Mock Promises for a library that is not supported, please open a github issue.
+
+Mock Promises is test framework agnostic, and we have code examples for the [jasmine] and [mocha] testing frameworks in the [spec/javascripts] directory.
 
 ##Installation
 Download [mock-promises.js] and add it to your project.  If you are using the jasmine gem, mock-promises.js needs to be in the src_files path in jasmine.yml.
 
-##Setup
-
+## Q
+#### Setup
 (These directions are for the Q library, or any libraries with a similar re-use of the `then` function.)
 
 To start mocking, use the `install` function.  The argument to `install` is the `Promise` class used by your promise library.  It happens to be `Q.makePromise` for Q.
@@ -17,22 +19,22 @@ To start mocking, use the `install` function.  The argument to `install` is the 
 mockPromises.install(Q.makePromise)
 ```
 
-For Jasmine, it is recommended to put this is in the global `beforeEach` of your spec helper.  Any promises that are instantiated before you start mocking will not be mocked.
+It is recommended to put this is in the global `beforeEach` of your spec helper.  Any promises that are instantiated before you start mocking will not be mocked.
 
 To prevent test pollution, you should reset mocking between tests
 ```js
 mockPromises.reset();
 ```
 
-##Teardown
+####Teardown
 To turn off mocking, use the `uninstall` function
 
 ```js
 mockPromises.uninstall();
 ```
 
-####With Native Promises
-If you are using Native promises, mock promises needs to mock out the constructor, which requires `getMockPromise`.  This method is doing a lot more than `install`, and is not complete.
+## Native Promises
+If you are using Native promises, mock promises needs to mock out the constructor, which requires `getMockPromise`.  This method is doing a lot more than `install`, and is still in development.
 
 ```js
 Promise = mockPromises.getMockPromise(Promise);
@@ -110,6 +112,8 @@ describe("executeForPromise", function() {
 
 [Contracts]:#Contracts
 [jasmine]:https://github.com/pivotal/jasmine
+[mocha]:https://github.com/visionmedia/mocha
+[spec/javascripts]:https://github.com/charleshansen/mock-promises/tree/master/spec/javascripts
 [jasmine-ajax]:https://github.com/pivotal/jasmine-ajax
 [mock-promises.js]:https://github.com/charleshansen/mock-promises/blob/master/lib/mock-promises.js
 [mock-promises_spec.js]:https://github.com/charleshansen/mock-promises/blob/master/spec/javascripts/mock-promises_spec.js
