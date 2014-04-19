@@ -7,7 +7,16 @@ Mock Promises currently supports the [Q] promise library and native Promises in 
 Mock Promises is test framework agnostic, and we have code examples for the [jasmine] and [mocha] testing frameworks in the [spec/javascripts] directory.
 
 ##Installation
+#### Self Vendoring
+
 Download [mock-promises.js] and add it to your project.  If you are using the jasmine gem, mock-promises.js needs to be in the src_files path in jasmine.yml.
+
+#### NPM
+In node, you can use `npm install mock-promises`.  
+
+Once the module is installed `require('mock-promises')` in your specs will attach `mockPromises` to the global namespace.
+
+Node does not currently support native promises and you may need to use the [es6 promise polyfill] if you want to run the example specs.
 
 ## Q
 #### Setup
@@ -119,4 +128,5 @@ describe("executeForPromise", function() {
 [mock-promises_spec.js]:https://github.com/charleshansen/mock-promises/blob/master/spec/javascripts/mock-promises_spec.js
 [Q]:https://github.com/kriskowal/q
 [RSVP]:https://github.com/tildeio/rsvp.js/
+[es6 promise polyfill]:https://github.com/jakearchibald/es6-promise
 
