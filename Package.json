@@ -1,7 +1,25 @@
 {
   "name": "mock-promises",
-  "version": "0.0.1",
+  "version": "0.0.2",
+  "author": "Charles Hansen <chansen87@gmail.com>",
+  "license": "MIT",
+  "description": "Library for mocking promises in specs",
+  "main": "lib/mock-promises.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/charleshansen/mock-promises.git"
+  },
+  "bugs": {
+    "url": "https://github.com/charleshansen/mock-promises/issues"
+  },
+  "homepage": "https://github.com/charleshansen/mock-promises",
   "scripts": {
-    "preinstall": "npm install -g mocha-server"
-  }
+    "preinstall": "npm install -g mocha-server",
+    "test": "mocha-server spec/javascripts/mocha_examples_test.js -r lib/mock-promises.js spec/javascripts/support/expect.js"
+  },
+  "keywords": [
+    "promises",
+    "promise",
+    "test"
+  ]
 }
