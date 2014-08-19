@@ -1,0 +1,6 @@
+spec/
+*.iml
+.git*
+.idea
+Gemfile.lock
+node_modules
