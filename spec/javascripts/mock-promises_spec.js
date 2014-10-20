@@ -122,6 +122,106 @@ function itImplementsContracts(PromiseLibrary) {
       });
     });
 
+    describe("chained thens", function() {
+      it("works when promises resolve smoothly", function() {
+        var deferred = getDeferred();
+        var promise = deferred.promise;
+        var promisedValue = 'not resolved';
+        var chainedValue = 'not resolved';
+        var chainedPromise = promise.then(function(value) {
+          return value + 'bar'
+        }).then(function(value) {
+            promisedValue = value;
+            return value + 'baz'
+          });
+
+        chainedPromise.then(function(value) {
+          chainedValue = value;
+        });
+
+        deferred.resolve('foo');
+        mockPromises.executeForPromise(promise);
+        mockPromises.executeForResolvedPromises();
+        expect(promisedValue).toBe('foobar');
+        mockPromises.executeForResolvedPromises();
+        expect(chainedValue).toBe('foobarbaz');
+      });
+
+      it('continues the chain if the error handler returns a value', function() {
+        var deferred = getDeferred();
+        var promise = deferred.promise;
+        var promisedValue = 'not resolved';
+        promise.then(null, function(value) {
+          return value + 'bar'
+        }).then(function(value) {
+            promisedValue = value;
+          });
+
+        deferred.reject('foo');
+        mockPromises.executeForPromise(promise);
+        mockPromises.executeForResolvedPromises();
+        expect(promisedValue).toBe('foobar');
+      });
+
+      it('rejects the chain when the success handler throws', function() {
+        var deferred = getDeferred();
+        var promise = deferred.promise;
+        var promisedValue = 'not resolved';
+        promise.then(function() { throw('bar')
+        }).then(null, function(value) {
+            promisedValue = value;
+          });
+
+        deferred.resolve('foo');
+        mockPromises.executeForPromise(promise);
+        mockPromises.executeForResolvedPromises();
+        expect(promisedValue).toBe('bar');
+      });
+
+      it('rejects the chain when the error handler throws', function() {
+        var deferred = getDeferred();
+        var promise = deferred.promise;
+        var promisedValue = 'not resolved';
+        promise.then(null, function() { throw('bar')
+        }).then(null, function(value) {
+            promisedValue = value;
+          });
+
+        deferred.reject('foo');
+        mockPromises.executeForPromise(promise);
+        mockPromises.executeForResolvedPromises();
+        expect(promisedValue).toBe('bar');
+      });
+
+      it('resolves with the original value if there is no success handler', function() {
+        var deferred = getDeferred();
+        var promise = deferred.promise;
+        var promisedValue = 'not resolved';
+        promise.then().then(function(value) {
+            promisedValue = value;
+          });
+
+        deferred.resolve('foo');
+        mockPromises.executeForPromise(promise);
+        mockPromises.executeForResolvedPromises();
+        expect(promisedValue).toBe('foo');
+      });
+
+      it('rejects with the original value if there is no error handler', function() {
+        var deferred = getDeferred();
+        var promise = deferred.promise;
+        var promisedValue = 'not resolved';
+        promise.then().then(null, function(value) {
+          promisedValue = value;
+        });
+
+        deferred.reject('foo');
+        mockPromises.executeForPromise(promise);
+        mockPromises.executeForResolvedPromises();
+        expect(promisedValue).toBe('foo');
+      });
+    });
+
     describe("executeForPromises", function() {
       it("works for executes the given promises", function() {
         promise1.then(fulfilledHandler1);
@@ -183,14 +283,6 @@ describe("mock promises", function() {
         expect(promisedValue).toBe("foo");
         done();
       }, 1);
-    });
-
-    it("maintains that then is chainable", function() {
-      var promise = QLibrary.PromiseWrapper("chainThings");
-      var chainedReturn = promise.then(function() {
-      }).then(function() {
-      });
-      expect(chainedReturn).toBe(promise);
     });
 
     itImplementsContracts(QLibrary);
