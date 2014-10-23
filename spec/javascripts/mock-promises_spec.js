@@ -109,19 +109,6 @@ function itImplementsContracts(PromiseLibrary) {
       });
     });
 
-    describe("executeForResolvedPromises", function() {
-      it("executes handlers for all resolved promises", function() {
-        var deferred = getDeferred();
-        var unresolvedPromise = deferred.promise;
-        var unresolvedSpy = jasmine.createSpy("unresolved");
-        unresolvedPromise.then(unresolvedSpy);
-        mockPromises.executeForResolvedPromises();
-        expect(fulfilledHandler1).toHaveBeenCalled();
-        expect(fulfilledHandler2).toHaveBeenCalled();
-        expect(unresolvedSpy).not.toHaveBeenCalled();
-      });
-    });
-
     describe("chained thens", function() {
       it("works when promises resolve smoothly", function() {
         var deferred = getDeferred();
@@ -145,6 +132,23 @@ function itImplementsContracts(PromiseLibrary) {
         expect(promisedValue).toBe('foobar');
         mockPromises.executeForResolvedPromises();
         expect(chainedValue).toBe('foobarbaz');
+      });
+
+      it('handles branching', function() {
+        var deferred = getDeferred();
+        var promise1 = deferred.promise;
+        var promise2Value = 'not resolved';
+        var promise3Value = 'not resolved';
+        var promise2 = promise1.then(function(value) { return value + 'bar'; });
+        var promise3 = promise1.then(function(value) { return value + 'baz'; });
+
+        promise2.then(function(value) { promise2Value = value;});
+        promise3.then(function(value) { promise3Value = value;});
+        deferred.resolve('foo');
+        mockPromises.executeForPromise(promise1);
+        mockPromises.executeForResolvedPromises();
+        expect(promise2Value).toBe('foobar');
+        expect(promise3Value).toBe('foobaz');
       });
 
       it('continues the chain if the error handler returns a value', function() {
@@ -219,6 +223,62 @@ function itImplementsContracts(PromiseLibrary) {
         mockPromises.executeForPromise(promise);
         mockPromises.executeForResolvedPromises();
         expect(promisedValue).toBe('foo');
+      });
+    });
+
+    describe("iterateForPromsie", function() {
+      it('executes the top-level then if the promise has not been executed', function() {
+        var promisedValue;
+        promise1 = PromiseWrapper('foo');
+        promise1.then(function(value) {
+          promisedValue = value;
+        });
+        promisedValue = "not resolved";
+        mockPromises.iterateForPromise(promise1);
+        expect(promisedValue).toEqual("foo");
+      });
+
+      it('calls the next generation of handlers if the promise has been executed', function() {
+        promise1 = PromiseWrapper('foo');
+        promise2 = promise1.then(function(value) {
+          return value + 'bar';
+        });
+        var childValue1, childValue2;
+        promise2.then(function(value) {
+          childValue1 = value;
+        });
+        promise2.then(function(value) {
+          childValue2 = value;
+        });
+        mockPromises.executeForPromise(promise1);
+        expect(childValue1).not.toEqual("foobar");
+        expect(childValue2).not.toEqual("foobar");
+        mockPromises.iterateForPromise(promise1);
+        expect(childValue1).toEqual("foobar");
+        expect(childValue2).toEqual("foobar");
+      });
+
+      it('does not throw if the chain is at an end', function() {
+        promise1 = PromiseWrapper('foo');
+        promise1.then(function(){});
+        expect(function() {
+          mockPromises.iterateForPromise(promise1);
+          mockPromises.iterateForPromise(promise1);
+          mockPromises.iterateForPromise(promise1);
+        }).not.toThrow();
+      });
+    });
+
+    describe("executeForResolvedPromises", function() {
+      it("executes handlers for all resolved promises", function() {
+        var deferred = getDeferred();
+        var unresolvedPromise = deferred.promise;
+        var unresolvedSpy = jasmine.createSpy("unresolved");
+        unresolvedPromise.then(unresolvedSpy);
+        mockPromises.executeForResolvedPromises();
+        expect(fulfilledHandler1).toHaveBeenCalled();
+        expect(fulfilledHandler2).toHaveBeenCalled();
+        expect(unresolvedSpy).not.toHaveBeenCalled();
       });
     });
 
