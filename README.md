@@ -99,7 +99,7 @@ Returns an array of all contracts associated with the mocked promise.
 
 ##Examples
 
-To see more detailed examples, look in [mock-promises_spec.js].  A simpler examples are included below.
+To see more detailed examples, look in [mock-promises_spec.js]. Some examples are included below.
 
 ```js
 describe("executeForPromise", function() {
