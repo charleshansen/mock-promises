@@ -55,6 +55,9 @@ to turn off mock in this case, there is a `getOriginalPromise` method
 Promise = mockPromises.getOriginalPromise();
 ```
 
+###Promise Resolution Policy
+Promises often lead to other promises, for example, `promise.then(function1).then(function2)`, so we had to decide what happens to the `function2` on a promise when you execute the `function1`. We have chosen to force the user to explicitly ask for each callback to be executed, so that they do not accidentally execute callacks without realizing it. Even `executeForResolvedPromises` will only go down one level of the chain for each call. To manually go down a promise chain, you can use `iterateForPromise`.
+
 ##API
 
 ### install(PromiseClass)
