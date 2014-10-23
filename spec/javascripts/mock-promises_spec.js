@@ -239,11 +239,14 @@ function itImplementsContracts(PromiseLibrary) {
       });
 
       it('calls the next generation of handlers if the promise has been executed', function() {
+        var parentValue = 'not foo';
         promise1 = PromiseWrapper('foo');
         promise2 = promise1.then(function(value) {
+          parentValue = value;
           return value + 'bar';
         });
-        var childValue1, childValue2;
+        var childValue1 = 'not foobar';
+        var childValue2 = 'not foobar';
         promise2.then(function(value) {
           childValue1 = value;
         });
@@ -251,9 +254,11 @@ function itImplementsContracts(PromiseLibrary) {
           childValue2 = value;
         });
         mockPromises.executeForPromise(promise1);
-        expect(childValue1).not.toEqual("foobar");
-        expect(childValue2).not.toEqual("foobar");
+        expect(parentValue).toEqual("foo");
+        expect(childValue1).toEqual("not foobar");
+        expect(childValue2).toEqual("not foobar");
         mockPromises.iterateForPromise(promise1);
+        expect(parentValue).toEqual("foo");
         expect(childValue1).toEqual("foobar");
         expect(childValue2).toEqual("foobar");
       });
