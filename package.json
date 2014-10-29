@@ -1,6 +1,6 @@
 {
   "name": "mock-promises",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "author": "Charles Hansen <chansen87@gmail.com>",
   "license": "MIT",
   "description": "Library for mocking promises in specs",
