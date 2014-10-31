@@ -272,6 +272,25 @@ function itImplementsContracts(PromiseLibrary) {
           mockPromises.iterateForPromise(promise1);
         }).not.toThrow();
       });
+
+      it('chains correctly when a promise resolves to another promise', function() {
+        promise1 = PromiseWrapper('foo');
+        promise2 = PromiseWrapper('bar');
+        var promisedValue = 'not resolved';
+        var promisedChainedValue = 'not resolved';
+        promise1.then(function(value) {
+          promisedValue = value;
+          return promise2
+        }).then(function(value) {
+            promisedChainedValue = value;
+          });
+
+        mockPromises.executeForPromise(promise1);
+        mockPromises.executeForPromise(promise2);
+        mockPromises.iterateForPromise(promise1);
+        expect(promisedValue).toEqual('foo');
+        expect(promisedChainedValue).toEqual('bar');
+      });
     });
 
     describe("executeForResolvedPromises", function() {
