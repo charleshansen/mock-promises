@@ -291,6 +291,25 @@ function itImplementsContracts(PromiseLibrary) {
         expect(promisedValue).toEqual('foo');
         expect(promisedChainedValue).toEqual('bar');
       });
+
+      it('chains correctly when a thenable returns undefined', function() {
+        promise = PromiseWrapper('foo');
+
+        var promisedValue = 'not resolved';
+        var promisedChainedValue = 'not resolved';
+
+        promise.then(function() {
+          promisedValue = 'foo';
+        }).then(function() {
+          promisedChainedValue = 'bar';
+        });
+
+        mockPromises.executeForPromise(promise);
+        mockPromises.iterateForPromise(promise);
+
+        expect(promisedValue).toEqual('foo');
+        expect(promisedChainedValue).toEqual('bar');
+      });
     });
 
     describe("executeForResolvedPromises", function() {
