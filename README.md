@@ -2,7 +2,7 @@
 Mock Promises is a library for synchronously testing asynchronous javascript promises.  It is designed to feel similar to libraries for synchronously testing asynchronous http requests, such as [jasmine-ajax].
 
 ##Supported Libraries
-Mock Promises currently supports the [Q] promise library and native Promises (only for simple uses) in Chrome. If you would like to use Mock Promises for a library that is not supported, please open a github issue.
+Mock Promises currently supports the [Q] promise library, [es6-promise] libary (but not the `all` function), and native Promises (only for simple uses) in Chrome. If you would like to use Mock Promises for a library that is not supported, please open a github issue.
 
 Mock Promises is test framework agnostic, and we have code examples for the [jasmine] and [mocha] testing frameworks in the [spec/javascripts] directory.
 
@@ -16,19 +16,26 @@ In node, you can use `npm install mock-promises`.
 
 Once the module is installed `require('mock-promises')` in your specs will attach `mockPromises` to the global namespace.
 
-Node does not currently support native promises and you may need to use the [es6 promise polyfill] if you want to run the example specs.
+Node does not currently support native promises and you may need to use [es6-promise] if you want to run the example specs.
 
-## Q
+## Promise Libraries
 #### Setup
-(These directions are for the Q library, or any libraries with a similar re-use of the `then` function.)
+()
 
-To start mocking, use the `install` function.  The argument to `install` is the `Promise` class used by your promise library.  It happens to be `Q.makePromise` for Q.
-
+To start mocking, use the `install` function.  The argument to `install` is the `Promise` class used by your promise library. 
+- Q
 ```js
 mockPromises.install(Q.makePromise)
 ```
+- ES6-Promise
+```js
+mockPromises.install(ES6Promise.Promise)
+```
+- Other Libraries
 
-It is recommended to put this is in the global `beforeEach` of your spec helper.  Any promises that are instantiated before you start mocking will not be mocked.
+In principal, mock promises can be used with any testing library that mostly uses `then` under the hood. It does rely a bit on internal state, so each library probably needs a small amount of work to use (or a large amount for native promises).
+
+It is recommended to put the `install` is in the global `beforeEach` of your spec helper.  Any promises that are instantiated before you start mocking will not be mocked.
 
 To prevent test pollution, you should reset mocking between tests
 ```js
@@ -165,5 +172,5 @@ describe("iterateForPromise", function() {
 [mock-promises_spec.js]:https://github.com/charleshansen/mock-promises/blob/master/spec/javascripts/mock-promises_spec.js
 [Q]:https://github.com/kriskowal/q
 [RSVP]:https://github.com/tildeio/rsvp.js/
-[es6 promise polyfill]:https://github.com/jakearchibald/es6-promise
+[es6-promise]:https://github.com/jakearchibald/es6-promise
 
