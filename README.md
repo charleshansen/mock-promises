@@ -20,7 +20,6 @@ Node does not currently support native promises and you may need to use [es6-pro
 
 ## Promise Libraries
 #### Setup
-()
 
 To start mocking, use the `install` function.  The argument to `install` is the `Promise` class used by your promise library. 
 - Q
