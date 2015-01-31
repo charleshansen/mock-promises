@@ -391,6 +391,60 @@ describe("mock promises", function() {
     itImplementsContracts(QLibrary);
   });
 
+ describe("mocking es6-promises", function() {
+    var es6Library = {};
+    beforeEach(function() {
+      var Promise = ES6Promise.Promise;
+      es6Library.PromiseClass = Promise;
+      es6Library.PromiseWrapper = function(value) {return Promise.resolve(value);}
+      es6Library.getDeferred = function() {
+        var deferred = {};
+        var promise = new Promise(function(resolve, reject) {
+          deferred.resolve = resolve;
+          deferred.reject = reject;
+        });
+        deferred.promise = promise;
+        return deferred;
+      };
+      mockPromises.install(es6Library.PromiseClass);
+      mockPromises.reset();
+    });
+
+    afterEach(function() {
+      mockPromises.uninstall();
+    });
+
+    it("does not allow normal promise resolution when mocking", function(done) {
+      var promise = es6Library.PromiseWrapper("foo");
+      var promisedValue;
+      promise.then(function(value) {
+        promisedValue = value;
+      });
+      promisedValue = "not foo";
+      setTimeout(function() {
+        expect(promisedValue).toBe("not foo");
+        done();
+      }, 1);
+    });
+
+    it("can be uninstalled", function(done) {
+      mockPromises.uninstall();
+
+      var promise = es6Library.PromiseWrapper("foo");
+      var promisedValue;
+      promise.then(function(value) {
+        promisedValue = value;
+      });
+      promisedValue = "not foo";
+      setTimeout(function() {
+        expect(promisedValue).toBe("foo");
+        done();
+      }, 1);
+    });
+
+    itImplementsContracts(es6Library);
+  });
+
   describe("for native promises", function() {
     var promise1, promise2;
 
