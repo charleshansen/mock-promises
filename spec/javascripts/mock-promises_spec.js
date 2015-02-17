@@ -392,9 +392,10 @@ describe("mock promises", function() {
   });
 
  describe("mocking es6-promises", function() {
+    var Promise;
     var es6Library = {};
     beforeEach(function() {
-      var Promise = ES6Promise.Promise;
+      Promise = ES6Promise.Promise;
       es6Library.PromiseClass = Promise;
       es6Library.PromiseWrapper = function(value) {return Promise.resolve(value);}
       es6Library.getDeferred = function() {
@@ -428,12 +429,14 @@ describe("mock promises", function() {
     });
 
     it("can be uninstalled", function(done) {
+      var fakeAll = Promise.all;
       mockPromises.uninstall();
+      expect(Promise.all).not.toEqual(fakeAll);
 
       var promise = es6Library.PromiseWrapper("foo");
       var promisedValue;
-      promise.then(function(value) {
-        promisedValue = value;
+      Promise.all([promise]).then(function(values) {
+        promisedValue = values[0]
       });
       promisedValue = "not foo";
       setTimeout(function() {
@@ -441,6 +444,53 @@ describe("mock promises", function() {
         done();
       }, 1);
     });
+
+   describe("#all", function() {
+     var allPromise, deferred1, deferred2, fulfilledSpy, errorSpy;
+     beforeEach(function() {
+       deferred1 = es6Library.getDeferred();
+       deferred2 = es6Library.getDeferred();
+       fulfilledSpy = jasmine.createSpy("fulfilled");
+       errorSpy = jasmine.createSpy("error");
+       allPromise = Promise.all([deferred1.promise, deferred2.promise]);
+       allPromise.then(fulfilledSpy, errorSpy);
+     });
+
+     it('does not resolve when not all of the promises are resolved', function() {
+       deferred1.resolve('foo');
+       mockPromises.executeForPromise(deferred1.promise);
+       mockPromises.executeForResolvedPromises();
+       expect(fulfilledSpy).not.toHaveBeenCalled();
+     });
+
+     describe('when the promises are successful', function() {
+       beforeEach(function() {
+         deferred1.resolve('foo');
+         deferred2.resolve('bar');
+       });
+
+       it('resolves with an array of values from the original promises', function() {
+         mockPromises.executeForPromise(deferred1.promise);
+         mockPromises.executeForPromise(deferred2.promise);
+         mockPromises.executeForPromise(allPromise);
+         expect(fulfilledSpy).toHaveBeenCalledWith(["foo", "bar"]);
+       });
+     });
+
+     describe('when a promise fails', function() {
+       beforeEach(function() {
+         deferred1.resolve('foo');
+         deferred2.reject('bar');
+       });
+
+       it('rejects with the value of the first rejected promise', function() {
+         mockPromises.executeForPromise(deferred1.promise);
+         mockPromises.executeForPromise(deferred2.promise);
+         mockPromises.executeForPromise(allPromise);
+         expect(errorSpy).toHaveBeenCalledWith('bar');
+       });
+     });
+   });
 
     itImplementsContracts(es6Library);
   });
