@@ -492,6 +492,38 @@ describe("mock promises", function() {
      });
    });
 
+   describe("#race", function() {
+     var deferred1, deferred2, thenSpy, failSpy, racePromise;
+     beforeEach(function() {
+       deferred1 = es6Library.getDeferred();
+       deferred2 = es6Library.getDeferred();
+       racePromise = Promise.race([deferred1.promise, deferred2.promise]);
+       thenSpy = jasmine.createSpy("then");
+       failSpy = jasmine.createSpy("fail");
+       racePromise.then(thenSpy, failSpy);
+     });
+
+     it("resolves when the first promise resolves", function() {
+       deferred2.resolve("foo");
+       mockPromises.executeForPromise(deferred2.promise);
+       deferred1.resolve("bar");
+       mockPromises.executeForPromise(deferred1.promise);
+       mockPromises.executeForPromise(racePromise);
+       expect(thenSpy).toHaveBeenCalledWith("foo");
+       expect(thenSpy).not.toHaveBeenCalledWith("bar");
+     });
+
+     it("rejects when the first promise rejects", function() {
+       deferred2.reject("foo");
+       mockPromises.executeForPromise(deferred2.promise);
+       deferred1.resolve("bar");
+       mockPromises.executeForPromise(deferred1.promise);
+       mockPromises.executeForPromise(racePromise);
+       expect(failSpy).toHaveBeenCalledWith("foo");
+       expect(thenSpy).not.toHaveBeenCalled();
+     });
+   });
+
     itImplementsContracts(es6Library);
   });
 
@@ -525,7 +557,7 @@ describe("mock promises", function() {
 
     itImplementsContracts(nativeLibrary);
 
-    describe("Promises.all", function() {
+    describe("#all", function() {
       it("resolves when all of the promises resolve", function() {
         var allPromise = Promise.all([promise1, promise2]);
         var thenSpy = jasmine.createSpy("then");
@@ -537,7 +569,39 @@ describe("mock promises", function() {
       });
     });
 
-    describe("Promise.reject", function() {
+    describe("#race", function() {
+      var deferred1, deferred2, thenSpy, failSpy, racePromise;
+      beforeEach(function() {
+        deferred1 = nativeLibrary.getDeferred();
+        deferred2 = nativeLibrary.getDeferred();
+        racePromise = Promise.race([deferred1.promise, deferred2.promise]);
+        thenSpy = jasmine.createSpy("then");
+        failSpy = jasmine.createSpy("fail");
+        racePromise.then(thenSpy, failSpy);
+      });
+
+      it("resolves when the first promise resolves", function() {
+        deferred2.resolve("foo");
+        mockPromises.executeForPromise(deferred2.promise);
+        deferred1.resolve("bar");
+        mockPromises.executeForPromise(deferred1.promise);
+        mockPromises.executeForPromise(racePromise);
+        expect(thenSpy).toHaveBeenCalledWith("foo");
+        expect(thenSpy).not.toHaveBeenCalledWith("bar");
+      });
+
+      it("rejects when the first promise rejects", function() {
+        deferred2.reject("foo");
+        mockPromises.executeForPromise(deferred2.promise);
+        deferred1.resolve("bar");
+        mockPromises.executeForPromise(deferred1.promise);
+        mockPromises.executeForPromise(racePromise);
+        expect(failSpy).toHaveBeenCalledWith("foo");
+        expect(thenSpy).not.toHaveBeenCalled();
+      });
+    });
+
+    describe("#reject", function() {
       it("creates a rejected promise", function() {
         var rejectedPromise = Promise.reject("wrong");
         var failSpy = jasmine.createSpy("fail");

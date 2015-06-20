@@ -49,7 +49,7 @@ mockPromises.uninstall();
 ```
 
 ## Native Promises
-If you are using Native promises, mock promises needs to mock out the constructor, which requires `getMockPromise`.  This method is doing a lot more than `install`, and is still in development. Mock Promises currently has significantly reduced functionality with Native Promises.
+If you are using Native promises, mock promises needs to mock out the constructor, which requires `getMockPromise`.  This method is doing a lot more than `install` and may have slightly different behavior than mocking out promises from libraries.
 
 ```js
 Promise = mockPromises.getMockPromise(Promise);
