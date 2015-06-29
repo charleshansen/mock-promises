@@ -13,10 +13,10 @@ function itImplementsContracts(PromiseLibrary) {
       fulfilledHandler2 = jasmine.createSpy("fullfilled2");
       errorHandler = jasmine.createSpy("error");
       progressHandler = jasmine.createSpy("progress");
-      promise1 = PromiseWrapper("foo");
-      promise2 = PromiseWrapper("bar");
-      promise1.then(fulfilledHandler1, errorHandler, progressHandler);
-      promise2.then(fulfilledHandler2);
+      //promise1 = PromiseWrapper("foo");
+      //promise2 = PromiseWrapper("bar");
+      //promise1.then(fulfilledHandler1, errorHandler, progressHandler);
+      //promise2.then(fulfilledHandler2);
     });
     describe("all", function() {
       it("returns a list of promise/handler objects", function() {
@@ -290,6 +290,33 @@ function itImplementsContracts(PromiseLibrary) {
         mockPromises.iterateForPromise(promise1);
         expect(promisedValue).toEqual('foo');
         expect(promisedChainedValue).toEqual('bar');
+      });
+
+      it('chains when a promise returns a resolved promise', function() {
+        promise1 = PromiseWrapper('foo');
+        promise2 = PromiseWrapper(promise1);
+        var promisedValue = 'not resolved';
+        promise2.then(function(value) {
+          promisedValue = value;
+        })
+        mockPromises.executeForResolvedPromises();
+        mockPromises.executeForResolvedPromises();
+        expect(promisedValue).toEqual('foo');
+      });
+
+      it('chains when a promise returns a rejected promise', function() {
+        deferred = getDeferred();
+        brokenPromise = deferred.promise;
+        deferred.reject("fail");
+        promise2 = PromiseWrapper(brokenPromise);
+        var promisedValue = 'not resolved';
+        promise2.then(function() {}, function(value) {
+          promisedValue = value;
+        });
+        mockPromises.executeForResolvedPromises();
+        mockPromises.executeForResolvedPromises();
+        expect(promisedValue).toEqual('fail');
+      
       });
 
       it('chains correctly when a thenable returns undefined', function() {
