@@ -1,3 +1,5 @@
+require('../spec_helper');
+
 var _collectionPromise, _collection, _modelPromise;
 
 var getModel = function() {

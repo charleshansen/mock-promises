@@ -1,4 +1,4 @@
-//Tests require Jasmine 2.0+ due to the 'done' function
+require('../spec_helper');
 
 function itImplementsContracts(PromiseLibrary) {
   describe("contracts", function() {
@@ -371,10 +371,10 @@ function itImplementsContracts(PromiseLibrary) {
   });
 }
 
-function itImplementsHelpers(PromiseLibrary, Promise) {
+function itImplementsHelpers(PromiseLibrary) {
   describe("#resolve", function() {
     it("creates a resolved promise", function() {
-      var fulfilledPromise = Promise.resolve('foo');
+      var fulfilledPromise = PromiseLibrary.HelpersContainer.resolve('foo');
       var fulfilledSpy = jasmine.createSpy('fulfilled');
       fulfilledPromise.then(fulfilledSpy);
       mockPromises.executeForPromise(fulfilledPromise);
@@ -384,7 +384,7 @@ function itImplementsHelpers(PromiseLibrary, Promise) {
 
   describe("#reject", function() {
     it("creates a rejected promise", function() {
-      var rejectedPromise = Promise.reject("wrong");
+      var rejectedPromise = PromiseLibrary.HelpersContainer.reject("wrong");
       var failSpy = jasmine.createSpy("fail");
       rejectedPromise.catch(failSpy);
       mockPromises.executeForPromise(rejectedPromise);
@@ -399,7 +399,7 @@ function itImplementsHelpers(PromiseLibrary, Promise) {
       deferred2 = PromiseLibrary.getDeferred();
       fulfilledSpy = jasmine.createSpy("fulfilled");
       errorSpy = jasmine.createSpy("error");
-      allPromise = Promise.all([deferred1.promise, deferred2.promise]);
+      allPromise = PromiseLibrary.HelpersContainer.all([deferred1.promise, deferred2.promise]);
       allPromise.then(fulfilledSpy, errorSpy);
     });
 
@@ -444,7 +444,7 @@ function itImplementsHelpers(PromiseLibrary, Promise) {
     beforeEach(function() {
       deferred1 = PromiseLibrary.getDeferred();
       deferred2 = PromiseLibrary.getDeferred();
-      racePromise = Promise.race([deferred1.promise, deferred2.promise]);
+      racePromise = PromiseLibrary.HelpersContainer.race([deferred1.promise, deferred2.promise]);
       thenSpy = jasmine.createSpy("then");
       failSpy = jasmine.createSpy("fail");
       racePromise.then(thenSpy, failSpy);
@@ -474,8 +474,10 @@ function itImplementsHelpers(PromiseLibrary, Promise) {
 
 describe("mock promises", function() {
   describe("mocking Q", function() {
+    var Q;
     var QLibrary = {};
     beforeEach(function() {
+      Q = require('q');
       QLibrary.PromiseClass = Q.makePromise;
       QLibrary.PromiseWrapper = Q;
       QLibrary.getDeferred = function() {
@@ -524,7 +526,7 @@ describe("mock promises", function() {
     var Promise;
     var es6Library = {};
     beforeEach(function() {
-      Promise = ES6Promise.Promise;
+      Promise = require('es6-promise').Promise;
       es6Library.PromiseClass = Promise;
       es6Library.PromiseWrapper = function(value) {return Promise.resolve(value);}
       es6Library.getDeferred = function() {
@@ -536,7 +538,8 @@ describe("mock promises", function() {
         deferred.promise = promise;
         return deferred;
       };
-      mockPromises.install(es6Library.PromiseClass);
+      es6Library.HelpersContainer = Promise;
+      mockPromises.install(Promise);
       mockPromises.reset();
     });
 
@@ -576,7 +579,7 @@ describe("mock promises", function() {
 
     itImplementsContracts(es6Library);
 
-    itImplementsHelpers(es6Library, ES6Promise.Promise);
+    itImplementsHelpers(es6Library);
   });
 
   describe("for native promises", function() {
@@ -585,9 +588,10 @@ describe("mock promises", function() {
     var nativeLibrary = {};
     beforeEach(function() {
       mockPromises.reset();
-      Promise = mockPromises.getMockPromise(Promise);
+      var Promise = mockPromises.getMockPromise(global.Promise);
+      global.Promise = Promise;
       nativeLibrary.PromiseClass = Promise;
-      nativeLibrary.PromiseWrapper = Promise.resolve
+      nativeLibrary.PromiseWrapper = Promise.resolve;
       nativeLibrary.getDeferred = function() {
         var deferred = {};
         var promise = new Promise(function(resolve, reject) {
@@ -597,6 +601,7 @@ describe("mock promises", function() {
         deferred.promise = promise;
         return deferred;
       };
+      nativeLibrary.HelpersContainer = Promise;
 
       promise1 = nativeLibrary.PromiseWrapper("foo");
       promise2 = nativeLibrary.PromiseWrapper("bar");
@@ -609,6 +614,6 @@ describe("mock promises", function() {
 
     itImplementsContracts(nativeLibrary);
 
-    itImplementsHelpers(nativeLibrary, mockPromises.getMockPromise(Promise));
+    itImplementsHelpers(nativeLibrary);
   });
 });

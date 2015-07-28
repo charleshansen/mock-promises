@@ -14,12 +14,22 @@
   },
   "homepage": "https://github.com/charleshansen/mock-promises",
   "scripts": {
-    "pretest": "npm install -g mocha-server",
-    "test": "mocha-server spec/javascripts/mocha_examples_test.js -r lib/mock-promises.js spec/javascripts/support/expect.js"
+    "test": "./node_modules/mocha-server/bin/mocha-server spec/javascripts/mocha_examples_test.js -r lib/mock-promises.js spec/support/expect.js"
   },
   "keywords": [
     "promises",
     "promise",
     "test"
-  ]
+  ],
+  "devDependencies": {
+    "es6-promise": "^2.3.0",
+    "gulp": "^3.9.0",
+    "gulp-jasmine-browser": "^0.1.4",
+    "gulp-util": "^3.0.6",
+    "mocha-server": "^0.2.0",
+    "q": "^1.4.1",
+    "slimerjs": "^0.9.6",
+    "webpack": "^1.10.5",
+    "webpack-stream": "^2.0.0"
+  }
 }
