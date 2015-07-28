@@ -1,4 +1,5 @@
-function itImplementsContracts(PromiseLibrary) {
+function itImplementsContracts(PromiseLibrary, options) {
+  options = options || {};
   describe("contracts", function() {
     var PromiseClass, PromiseWrapper, getDeferred;
     var fulfilledHandler1, fulfilledHandler2, errorHandler, progressHandler, promise1, promise2;
@@ -6,7 +7,6 @@ function itImplementsContracts(PromiseLibrary) {
       PromiseClass = PromiseLibrary.PromiseClass;
       PromiseWrapper = PromiseLibrary.PromiseWrapper;
       getDeferred = PromiseLibrary.getDeferred;
-      PromiseClass = mockPromises.getMockPromise(PromiseClass);
       fulfilledHandler1 = jasmine.createSpy("fullfilled1");
       fulfilledHandler2 = jasmine.createSpy("fullfilled2");
       errorHandler = jasmine.createSpy("error");
@@ -68,6 +68,10 @@ function itImplementsContracts(PromiseLibrary) {
           expect(errorSpy).toHaveBeenCalledWith("fail");
         });
         it("supports 'catch'", function() {
+          if(options.skipCatch) {
+            //bluebird does not implement catch according to spec
+            return;
+          }
           brokenPromise.catch(errorSpy);
           mockPromises.executeForPromise(brokenPromise);
           expect(errorSpy).toHaveBeenCalledWith("fail");
@@ -224,7 +228,7 @@ function itImplementsContracts(PromiseLibrary) {
       });
     });
 
-    describe("iterateForPromsie", function() {
+    describe("iterateForPromise", function() {
       it('executes the top-level then if the promise has not been executed', function() {
         var promisedValue;
         promise1 = PromiseWrapper('foo');
@@ -384,7 +388,7 @@ function itImplementsHelpers(PromiseLibrary) {
     it("creates a rejected promise", function() {
       var rejectedPromise = PromiseLibrary.HelpersContainer.reject("wrong");
       var failSpy = jasmine.createSpy("fail");
-      rejectedPromise.catch(failSpy);
+      rejectedPromise.then(function() {}, failSpy);
       mockPromises.executeForPromise(rejectedPromise);
       expect(failSpy).toHaveBeenCalledWith("wrong");
     });
@@ -470,7 +474,42 @@ function itImplementsHelpers(PromiseLibrary) {
   });
 }
 
+function itInstalls(PromiseLibrary) {
+  describe('installation', function () {
+    it("does not allow normal promise resolution when mocking", function (done) {
+      var promise = PromiseLibrary.PromiseWrapper("foo");
+      var promisedValue;
+      promise.then(function (value) {
+        promisedValue = value;
+      });
+      promisedValue = "not foo";
+      setTimeout(function () {
+        expect(promisedValue).toBe("not foo");
+        done();
+      }, 1);
+    });
+
+    it("can be uninstalled", function (done) {
+      var fakeAll = PromiseLibrary.HelpersContainer.all;
+      mockPromises.uninstall();
+      expect(PromiseLibrary.HelpersContainer.all).not.toEqual(fakeAll);
+
+      var promise = PromiseLibrary.PromiseWrapper("foo");
+      var promisedValue;
+      PromiseLibrary.HelpersContainer.all([promise]).then(function (values) {
+        promisedValue = values[0]
+      });
+      promisedValue = "not foo";
+      setTimeout(function () {
+        expect(promisedValue).toBe("foo");
+        done();
+      }, 1);
+    });
+  });
+}
+
 module.exports = {
   itImplementsContracts: itImplementsContracts,
-  itImplementsHelpers: itImplementsContracts
+  itImplementsHelpers: itImplementsHelpers,
+  itInstalls: itInstalls
 };

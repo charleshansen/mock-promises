@@ -3,9 +3,10 @@ require('../spec_helper');
 var sharedBehaviors = require('./shared_behaviors');
 var itImplementsContracts = sharedBehaviors.itImplementsContracts;
 var itImplementsHelpers = sharedBehaviors.itImplementsHelpers;
+var itInstalls = sharedBehaviors.itInstalls;
 
 describe("mock promises", function() {
-  describe("mocking Q", function() {
+  describe("Q", function() {
     var Q;
     var QLibrary = {};
     beforeEach(function() {
@@ -54,7 +55,7 @@ describe("mock promises", function() {
     itImplementsContracts(QLibrary);
   });
 
- describe("mocking es6-promises", function() {
+ describe("es6-promises", function() {
     var Promise;
     var es6Library = {};
     beforeEach(function() {
@@ -79,42 +80,14 @@ describe("mock promises", function() {
       mockPromises.uninstall();
     });
 
-    it("does not allow normal promise resolution when mocking", function(done) {
-      var promise = es6Library.PromiseWrapper("foo");
-      var promisedValue;
-      promise.then(function(value) {
-        promisedValue = value;
-      });
-      promisedValue = "not foo";
-      setTimeout(function() {
-        expect(promisedValue).toBe("not foo");
-        done();
-      }, 1);
-    });
-
-    it("can be uninstalled", function(done) {
-      var fakeAll = Promise.all;
-      mockPromises.uninstall();
-      expect(Promise.all).not.toEqual(fakeAll);
-
-      var promise = es6Library.PromiseWrapper("foo");
-      var promisedValue;
-      Promise.all([promise]).then(function(values) {
-        promisedValue = values[0]
-      });
-      promisedValue = "not foo";
-      setTimeout(function() {
-        expect(promisedValue).toBe("foo");
-        done();
-      }, 1);
-    });
+    itInstalls(es6Library);
 
     itImplementsContracts(es6Library);
 
     itImplementsHelpers(es6Library);
   });
 
-  describe("for native promises", function() {
+  describe("native promises", function() {
     var promise1, promise2;
 
     var nativeLibrary = {};
@@ -147,5 +120,37 @@ describe("mock promises", function() {
     itImplementsContracts(nativeLibrary);
 
     itImplementsHelpers(nativeLibrary);
+  });
+
+  describe("bluebird", function() {
+    var Promise;
+    var bluebirdLibrary = {};
+    beforeEach(function() {
+      Promise = require('bluebird');
+      bluebirdLibrary.PromiseClass = Promise;
+      bluebirdLibrary.PromiseWrapper = function(value) {return Promise.resolve(value);}
+      bluebirdLibrary.getDeferred = function() {
+        var deferred = {};
+        var promise = new Promise(function(resolve, reject) {
+          deferred.resolve = resolve;
+          deferred.reject = reject;
+        });
+        deferred.promise = promise;
+        return deferred;
+      };
+      bluebirdLibrary.HelpersContainer = Promise;
+      mockPromises.install(Promise);
+      mockPromises.reset();
+    });
+
+    afterEach(function() {
+      mockPromises.uninstall();
+    });
+
+    itInstalls(bluebirdLibrary);
+
+    itImplementsContracts(bluebirdLibrary, {skipCatch: true});
+
+    itImplementsHelpers(bluebirdLibrary);
   });
 });
