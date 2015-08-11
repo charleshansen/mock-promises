@@ -69,7 +69,7 @@ function itImplementsContracts(PromiseLibrary, options) {
         });
         it("supports 'catch'", function() {
           if(options.skipCatch) {
-            //bluebird does not implement catch according to spec
+            //bluebird catch is unusual
             return;
           }
           brokenPromise.catch(errorSpy);
@@ -275,7 +275,27 @@ function itImplementsContracts(PromiseLibrary, options) {
         }).not.toThrow();
       });
 
-      it('chains correctly when a promise resolves to another promise', function() {
+      it('chains correctly when a promise resolves to an unresolved promise', function() {
+        promise1 = PromiseWrapper('foo');
+        var deferred = getDeferred();
+        var promise2 = deferred.promise;
+        var promisedValue = 'not resolved';
+        var promisedChainedValue = 'not resolved';
+        promise1.then(function(value) {
+          promisedValue = value;
+          return promise2;
+        }).then(function(value) {
+          promisedChainedValue = value;
+        });
+        
+        mockPromises.executeForPromise(promise1);
+        deferred.resolve('bar')
+        mockPromises.executeForResolvedPromises();
+        expect(promisedValue).toEqual('foo');
+        expect(promisedChainedValue).toEqual('bar');
+      });
+      
+      it('chains correctly when a promise resolves to a resolved promise', function() {
         promise1 = PromiseWrapper('foo');
         promise2 = PromiseWrapper('bar');
         var promisedValue = 'not resolved';
@@ -288,10 +308,9 @@ function itImplementsContracts(PromiseLibrary, options) {
         });
 
         mockPromises.executeForPromise(promise1);
-        mockPromises.executeForPromise(promise2);
-        mockPromises.iterateForPromise(promise1);
+        mockPromises.executeForResolvedPromises();
         expect(promisedValue).toEqual('foo');
-        expect(promisedChainedValue).toEqual('bar');
+        expect(promisedChainedValue).toEqual('bar');        
       });
 
       it('chains when a promise returns a resolved promise', function() {
