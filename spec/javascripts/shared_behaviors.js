@@ -1,3 +1,5 @@
+/// <reference path="../../typings/jasmine/jasmine.d.ts"/>
+/* global mockPromises */
 function itImplementsContracts(PromiseLibrary, options) {
   options = options || {};
   describe("contracts", function() {
