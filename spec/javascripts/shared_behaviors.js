@@ -69,15 +69,14 @@ function itImplementsContracts(PromiseLibrary, options) {
           expect(successSpy).not.toHaveBeenCalled();
           expect(errorSpy).toHaveBeenCalledWith("fail");
         });
-        it("supports 'catch'", function() {
-          if(options.skipCatch) {
-            //bluebird catch is unusual
-            return;
-          }
-          brokenPromise.catch(errorSpy);
-          mockPromises.executeForPromise(brokenPromise);
-          expect(errorSpy).toHaveBeenCalledWith("fail");
-        });
+        if(!options.skipCatch) {
+          //bluebird catch is unusual
+          it("supports 'catch'", function() {
+            brokenPromise.catch(errorSpy);
+            mockPromises.executeForPromise(brokenPromise);
+            expect(errorSpy).toHaveBeenCalledWith("fail");
+          });
+        }
       });
 
       it("does not execute handlers more than once", function() {
@@ -389,6 +388,32 @@ function itImplementsContracts(PromiseLibrary, options) {
     describe("valueForPromise", function() {
       it("returns the value for resolved promises", function() {
         expect(mockPromises.valueForPromise(promise1)).toEqual("foo");
+      });
+    });
+
+    describe("tick", function () {
+      it("executes handlers for all resolved promises", function () {
+        var deferred = getDeferred();
+        var unresolvedPromise = deferred.promise;
+        var unresolvedSpy = jasmine.createSpy("unresolved");
+        unresolvedPromise.then(unresolvedSpy);
+        mockPromises.tick();
+        expect(fulfilledHandler1).toHaveBeenCalled();
+        expect(fulfilledHandler2).toHaveBeenCalled();
+        expect(unresolvedSpy).not.toHaveBeenCalled();
+      });
+
+      it("can execute multiple generations of promises", function() {
+        var firstSpy = jasmine.createSpy('first');
+        var secondSpy = jasmine.createSpy('first');
+        var thirdSpy = jasmine.createSpy('first');
+        promise1.then(firstSpy).then(secondSpy).then(thirdSpy);
+        mockPromises.tick(2);
+        expect(firstSpy).toHaveBeenCalled();
+        expect(secondSpy).toHaveBeenCalled();
+        expect(thirdSpy).not.toHaveBeenCalled();
+        mockPromises.tick(1);
+        expect(thirdSpy).toHaveBeenCalled();
       });
     });
   });
