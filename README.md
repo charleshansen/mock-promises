@@ -62,7 +62,7 @@ Promise = mockPromises.getOriginalPromise();
 ```
 
 ###Promise Resolution Policy
-Promises often lead to other promises, for example, `promise.then(function1).then(function2)`, so we had to decide what happens to the `function2` on a promise when you execute the `function1`. We have chosen to force the user to explicitly ask for each callback to be executed, so that they do not accidentally execute callacks without realizing it. Even `executeForResolvedPromises` will only go down one level of the chain for each call. To manually go down a promise chain, you can use `iterateForPromise`.
+Promises often lead to other promises, for example, `promise.then(function1).then(function2)`, so we had to decide what happens to the `function2` on a promise when you execute the `function1`. We have chosen to force the user to explicitly ask for each callback to be executed, so that they do not accidentally execute callacks without realizing it. Even `tick` will only go down one level of the chain unless the user specifies the number of levels. To manually go down a promise chain, you can use `iterateForPromise`.
 
 ##API
 
@@ -80,6 +80,9 @@ Returns a mocked version of PromiseClass; needed for mocking native promises
 
 ### getOriginalPromise
 Returns the unmocked version of PromiseClass mocked by `getMockPromise`; needed for unmocking native promises
+
+###tick(count)
+Executes all fulfillmentHandlers for each resolved promise. Executes all rejection handlers for each rejected promise. If passed a count, `tick` will repeat this procedure that many times. This is useful for deeply chained `then`s.
 
 ###executeForPromise(mockedPromise)
 Executes all fulfillmentHandlers if the mocked promise is resolved. Executes all rejectionHandlers if the mocked promise is rejected. Will not execute handlers that have already been executed.
