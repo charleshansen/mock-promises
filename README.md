@@ -2,7 +2,7 @@
 Mock Promises is a library for synchronously testing asynchronous javascript promises.  It is designed to feel similar to libraries for synchronously testing asynchronous http requests, such as [jasmine-ajax].
 
 ##Supported Libraries
-Mock Promises currently supports the [Q] promise library, [es6-promise] libary (but not the `all` function), and native Promises (only for simple uses) in Chrome. If you would like to use Mock Promises for a library that is not supported, please open a github issue.
+Mock Promises currently supports [es6-promise], [bluebird], [Q] and native Promises (where available). If you would like to use Mock Promises for a library that is not supported, please open a github issue.
 
 Mock Promises is test framework agnostic, and we have code examples for the [jasmine] and [mocha] testing frameworks in the [spec/javascripts] directory.
 
@@ -30,6 +30,7 @@ mockPromises.install(Q.makePromise)
 ```js
 mockPromises.install(ES6Promise.Promise)
 ```
+
 - Other Libraries
 
 In principal, mock promises can be used with any testing library that mostly uses `then` under the hood. It does rely a bit on internal state, so each library probably needs a small amount of work to use (or a large amount for native promises).
@@ -175,4 +176,5 @@ describe("iterateForPromise", function() {
 [Q]:https://github.com/kriskowal/q
 [RSVP]:https://github.com/tildeio/rsvp.js/
 [es6-promise]:https://github.com/jakearchibald/es6-promise
+[bluebird]:https://github.com/petkaantonov/bluebird
 
