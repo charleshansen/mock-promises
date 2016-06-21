@@ -320,15 +320,15 @@ function itImplementsContracts(PromiseLibrary, options) {
         var promisedValue = 'not resolved';
         promise2.then(function(value) {
           promisedValue = value;
-        })
+        });
         mockPromises.executeForResolvedPromises();
         mockPromises.executeForResolvedPromises();
         expect(promisedValue).toEqual('foo');
       });
 
       it('chains when a promise returns a rejected promise', function() {
-        deferred = getDeferred();
-        brokenPromise = deferred.promise;
+        var deferred = getDeferred();
+        var brokenPromise = deferred.promise;
         deferred.reject("fail");
         promise2 = PromiseWrapper(brokenPromise);
         promise2.foo = "bar";
@@ -343,7 +343,7 @@ function itImplementsContracts(PromiseLibrary, options) {
       });
 
       it('chains correctly when a thenable returns undefined', function() {
-        promise = PromiseWrapper('foo');
+        var promise = PromiseWrapper('foo');
 
         var promisedValue = 'not resolved';
         var promisedChainedValue = 'not resolved';
