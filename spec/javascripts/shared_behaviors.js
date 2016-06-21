@@ -485,6 +485,19 @@ function itImplementsHelpers(PromiseLibrary) {
         expect(errorSpy).toHaveBeenCalledWith('bar');
       });
     });
+
+    describe('when given an empty array', function() {
+      var doneSpy;
+      beforeEach(function() {
+        doneSpy = jasmine.createSpy('done')
+        allPromise = PromiseLibrary.HelpersContainer.all([]).then(doneSpy);
+      });
+
+      it('resolves to empty array', function() {
+        mockPromises.tick();
+        expect(doneSpy).toHaveBeenCalledWith([]);
+      });
+    });
   });
 
   describe("#race", function() {
@@ -516,6 +529,19 @@ function itImplementsHelpers(PromiseLibrary) {
       mockPromises.executeForPromise(racePromise);
       expect(failSpy).toHaveBeenCalledWith("foo");
       expect(thenSpy).not.toHaveBeenCalled();
+    });
+
+    describe('when given an empty array', function() {
+      var doneSpy;
+      beforeEach(function() {
+        doneSpy = jasmine.createSpy('done');
+        racePromise = PromiseLibrary.HelpersContainer.race([]).then(doneSpy);
+      });
+
+      it('resolves to undefined', function() {
+        mockPromises.tick();
+        expect(doneSpy).toHaveBeenCalledWith(undefined);
+      });
     });
   });
 }
