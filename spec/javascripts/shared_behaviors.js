@@ -458,6 +458,23 @@ function itImplementsHelpers(PromiseLibrary) {
       expect(fulfilledSpy).not.toHaveBeenCalled();
     });
 
+    it('does not resolve when a chained promise is resolved, but not all of the promises are resolved', function() {
+      var deferred3 = new PromiseLibrary.getDeferred();
+      var promise1Chain = deferred1.promise.then(function() {
+        return deferred3.promise
+      });
+
+      PromiseLibrary.HelpersContainer.all([promise1Chain, deferred2.promise]).then(fulfilledSpy);
+
+      deferred1.resolve();
+      mockPromises.tick();
+
+      deferred3.resolve();
+      mockPromises.tick(2);
+
+      expect(fulfilledSpy).not.toHaveBeenCalled();
+    });
+
     describe('when the promises are successful', function() {
       beforeEach(function() {
         deferred1.resolve('foo');
