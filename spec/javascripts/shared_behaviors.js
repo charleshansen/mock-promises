@@ -405,8 +405,8 @@ function itImplementsContracts(PromiseLibrary, options) {
 
       it("can execute multiple generations of promises", function() {
         var firstSpy = jasmine.createSpy('first');
-        var secondSpy = jasmine.createSpy('first');
-        var thirdSpy = jasmine.createSpy('first');
+        var secondSpy = jasmine.createSpy('second');
+        var thirdSpy = jasmine.createSpy('third');
         promise1.then(firstSpy).then(secondSpy).then(thirdSpy);
         mockPromises.tick(2);
         expect(firstSpy).toHaveBeenCalled();
@@ -414,6 +414,43 @@ function itImplementsContracts(PromiseLibrary, options) {
         expect(thirdSpy).not.toHaveBeenCalled();
         mockPromises.tick(1);
         expect(thirdSpy).toHaveBeenCalled();
+      });
+    });
+
+    describe("tickAllTheWay", function() {
+      it('ticks promises repeatedly until there are no promises left to tick', function() {
+        var firstSpy = jasmine.createSpy('first');
+        var secondSpy = jasmine.createSpy('second');
+        var thirdSpy = jasmine.createSpy('third');
+        promise1.then(firstSpy).then(secondSpy).then(thirdSpy);
+        var deferred = getDeferred();
+        var unresolvedPromise = deferred.promise;
+        var unresolvedSpy = jasmine.createSpy("unresolved");
+        unresolvedPromise.then(unresolvedSpy);
+        mockPromises.tickAllTheWay();
+        expect(firstSpy).toHaveBeenCalled();
+        expect(secondSpy).toHaveBeenCalled();
+        expect(thirdSpy).toHaveBeenCalled();
+        expect(unresolvedSpy).not.toHaveBeenCalled();
+      });
+
+      it('keeps going when a promise resolves to an unresolved promise', function() {
+        promise1 = PromiseWrapper('foo');
+        promise2 = PromiseWrapper('bar');
+        var deferred = getDeferred();
+        var promise3 = deferred.promise;
+        var thenSpy = jasmine.createSpy('then');
+
+        promise1.then(function() {
+          return promise3;
+        }).then(thenSpy);
+
+        promise2.then(function(value) {
+          deferred.resolve("chained " + value)
+        });
+
+        mockPromises.tickAllTheWay();
+        expect(thenSpy).toHaveBeenCalledWith("chained bar");
       });
     });
   });
