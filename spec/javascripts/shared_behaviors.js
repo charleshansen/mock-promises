@@ -21,7 +21,12 @@ function itImplementsContracts(PromiseLibrary, options) {
     describe("all", function() {
       it("returns a list of promise/handler objects", function() {
         expect(mockPromises.contracts.all()).toEqual([
-          jasmine.objectContaining({promise: promise1, fulfilledHandler: fulfilledHandler1, errorHandler: errorHandler, progressHandler: progressHandler}),
+          jasmine.objectContaining({
+            promise: promise1,
+            fulfilledHandler: fulfilledHandler1,
+            errorHandler: errorHandler,
+            progressHandler: progressHandler
+          }),
           jasmine.objectContaining({promise: promise2, fulfilledHandler: fulfilledHandler2})
         ]);
       });
@@ -29,7 +34,12 @@ function itImplementsContracts(PromiseLibrary, options) {
     describe("forPromise", function() {
       it("returns a list of promise/handler objects only for the requested promise", function() {
         expect(mockPromises.contracts.forPromise(promise1)).toEqual([
-          jasmine.objectContaining({promise: promise1, fulfilledHandler: fulfilledHandler1, errorHandler: errorHandler, progressHandler: progressHandler})
+          jasmine.objectContaining({
+            promise: promise1,
+            fulfilledHandler: fulfilledHandler1,
+            errorHandler: errorHandler,
+            progressHandler: progressHandler
+          })
         ]);
       });
     });
@@ -69,7 +79,7 @@ function itImplementsContracts(PromiseLibrary, options) {
           expect(successSpy).not.toHaveBeenCalled();
           expect(errorSpy).toHaveBeenCalledWith("fail");
         });
-        if(!options.skipCatch) {
+        if (!options.skipCatch) {
           //bluebird catch is unusual
           it("supports 'catch'", function() {
             brokenPromise.catch(errorSpy);
@@ -142,11 +152,19 @@ function itImplementsContracts(PromiseLibrary, options) {
         var promise1 = deferred.promise;
         var promise2Value = 'not resolved';
         var promise3Value = 'not resolved';
-        var promise2 = promise1.then(function(value) { return value + 'bar'; });
-        var promise3 = promise1.then(function(value) { return value + 'baz'; });
+        var promise2 = promise1.then(function(value) {
+          return value + 'bar';
+        });
+        var promise3 = promise1.then(function(value) {
+          return value + 'baz';
+        });
 
-        promise2.then(function(value) { promise2Value = value;});
-        promise3.then(function(value) { promise3Value = value;});
+        promise2.then(function(value) {
+          promise2Value = value;
+        });
+        promise3.then(function(value) {
+          promise3Value = value;
+        });
         deferred.resolve('foo');
         mockPromises.executeForPromise(promise1);
         mockPromises.executeForResolvedPromises();
@@ -174,7 +192,8 @@ function itImplementsContracts(PromiseLibrary, options) {
         var deferred = getDeferred();
         var promise = deferred.promise;
         var promisedValue = 'not resolved';
-        promise.then(function() { throw('bar')
+        promise.then(function() {
+          throw('bar')
         }).then(null, function(value) {
           promisedValue = value;
         });
@@ -189,7 +208,8 @@ function itImplementsContracts(PromiseLibrary, options) {
         var deferred = getDeferred();
         var promise = deferred.promise;
         var promisedValue = 'not resolved';
-        promise.then(null, function() { throw('bar')
+        promise.then(null, function() {
+          throw('bar')
         }).then(null, function(value) {
           promisedValue = value;
         });
@@ -268,7 +288,8 @@ function itImplementsContracts(PromiseLibrary, options) {
 
       it('does not throw if the chain is at an end', function() {
         promise1 = PromiseWrapper('foo');
-        promise1.then(function(){});
+        promise1.then(function() {
+        });
         expect(function() {
           mockPromises.iterateForPromise(promise1);
           mockPromises.iterateForPromise(promise1);
@@ -288,14 +309,43 @@ function itImplementsContracts(PromiseLibrary, options) {
         }).then(function(value) {
           promisedChainedValue = value;
         });
-        
+
         mockPromises.executeForPromise(promise1);
         deferred.resolve('bar')
         mockPromises.executeForResolvedPromises();
         expect(promisedValue).toEqual('foo');
         expect(promisedChainedValue).toEqual('bar');
       });
-      
+
+
+      it('deals with unresolved promises again...', function() {
+        var firstPromise = PromiseWrapper(1);
+        firstPromise.name = "first";
+
+        var deferred = getDeferred();
+        var deferredPromise = deferred.promise;
+        deferredPromise.name = "deferred";
+
+        var chainedPromise = firstPromise.then(function() {
+          return deferredPromise;
+        });
+
+        chainedPromise.name = "chained";
+
+        mockPromises.tick(22);
+
+        deferred.resolve(2);
+
+        mockPromises.tick(2);
+
+        chainedPromise.then(function(value) { console.log('value!', value)})
+
+        mockPromises.tick(10)
+
+        expect(mockPromises.valueForPromise(chainedPromise)).toBe(2);
+
+      });
+
       it('chains correctly when a promise resolves to a resolved promise', function() {
         promise1 = PromiseWrapper('foo');
         promise2 = PromiseWrapper('bar');
@@ -311,7 +361,7 @@ function itImplementsContracts(PromiseLibrary, options) {
         mockPromises.executeForPromise(promise1);
         mockPromises.executeForResolvedPromises();
         expect(promisedValue).toEqual('foo');
-        expect(promisedChainedValue).toEqual('bar');        
+        expect(promisedChainedValue).toEqual('bar');
       });
 
       it('chains when a promise returns a resolved promise', function() {
@@ -333,7 +383,8 @@ function itImplementsContracts(PromiseLibrary, options) {
         promise2 = PromiseWrapper(brokenPromise);
         promise2.foo = "bar";
         var promisedValue = 'not resolved';
-        promise2.then(function() {}, function(value) {
+        promise2.then(function() {
+        }, function(value) {
           promisedValue = value;
         });
         mockPromises.executeForResolvedPromises();
@@ -391,8 +442,8 @@ function itImplementsContracts(PromiseLibrary, options) {
       });
     });
 
-    describe("tick", function () {
-      it("executes handlers for all resolved promises", function () {
+    describe("tick", function() {
+      it("executes handlers for all resolved promises", function() {
         var deferred = getDeferred();
         var unresolvedPromise = deferred.promise;
         var unresolvedSpy = jasmine.createSpy("unresolved");
@@ -471,7 +522,8 @@ function itImplementsHelpers(PromiseLibrary) {
     it("creates a rejected promise", function() {
       var rejectedPromise = PromiseLibrary.HelpersContainer.reject("wrong");
       var failSpy = jasmine.createSpy("fail");
-      rejectedPromise.then(function() {}, failSpy);
+      rejectedPromise.then(function() {
+      }, failSpy);
       mockPromises.executeForPromise(rejectedPromise);
       expect(failSpy).toHaveBeenCalledWith("wrong");
     });
@@ -601,32 +653,32 @@ function itImplementsHelpers(PromiseLibrary) {
 }
 
 function itInstalls(PromiseLibrary) {
-  describe('installation', function () {
-    it("does not allow normal promise resolution when mocking", function (done) {
+  describe('installation', function() {
+    it("does not allow normal promise resolution when mocking", function(done) {
       var promise = PromiseLibrary.PromiseWrapper("foo");
       var promisedValue;
-      promise.then(function (value) {
+      promise.then(function(value) {
         promisedValue = value;
       });
       promisedValue = "not foo";
-      setTimeout(function () {
+      setTimeout(function() {
         expect(promisedValue).toBe("not foo");
         done();
       }, 1);
     });
 
-    it("can be uninstalled", function (done) {
+    it("can be uninstalled", function(done) {
       var fakeAll = PromiseLibrary.HelpersContainer.all;
       mockPromises.uninstall();
       expect(PromiseLibrary.HelpersContainer.all).not.toEqual(fakeAll);
 
       var promise = PromiseLibrary.PromiseWrapper("foo");
       var promisedValue;
-      PromiseLibrary.HelpersContainer.all([promise]).then(function (values) {
+      PromiseLibrary.HelpersContainer.all([promise]).then(function(values) {
         promisedValue = values[0]
       });
       promisedValue = "not foo";
-      setTimeout(function () {
+      setTimeout(function() {
         expect(promisedValue).toBe("foo");
         done();
       }, 1);
