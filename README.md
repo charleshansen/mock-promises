@@ -1,12 +1,12 @@
-#Mock Promises
+# Mock Promises
 Mock Promises is a library for synchronously testing asynchronous javascript promises.  It is designed to feel similar to libraries for synchronously testing asynchronous http requests, such as [jasmine-ajax].
 
-##Supported Libraries
+## Supported Libraries
 Mock Promises currently supports [es6-promise], [bluebird], [Q] and native Promises (where available). If you would like to use Mock Promises for a library that is not supported, please open a github issue.
 
 Mock Promises is test framework agnostic, and we have code examples for the [jasmine] and [mocha] testing frameworks in the [spec/javascripts] directory.
 
-##Installation
+## Installation
 #### Self Vendoring
 
 Download [mock-promises.js] and add it to your project.  If you are using the jasmine gem, mock-promises.js needs to be in the src_files path in jasmine.yml.
@@ -42,7 +42,7 @@ To prevent test pollution, you should reset mocking between tests
 mockPromises.reset();
 ```
 
-####Teardown
+#### Teardown
 To turn off mocking, use the `uninstall` function
 
 ```js
@@ -62,10 +62,10 @@ to turn off mock in this case, there is a `getOriginalPromise` method
 Promise = mockPromises.getOriginalPromise();
 ```
 
-###Promise Resolution Policy
+### Promise Resolution Policy
 Promises often lead to other promises, for example, `promise.then(function1).then(function2)`, so we had to decide what happens to the `function2` on a promise when you execute the `function1`. We have chosen to encourage the user to explicitly ask for each callback to be executed, so that they do not accidentally execute callacks without realizing it. Even `tick` will only go down one level of the chain unless the user specifies the number of levels. We have recently provided `tickAllTheWay`, but its use is discouraged in most circumstances.
 
-##API
+## API
 
 ### install(PromiseClass)
 Starts mocking promises of the given Promise Class
@@ -82,28 +82,28 @@ Returns a mocked version of PromiseClass; needed for mocking native promises
 ### getOriginalPromise
 Returns the unmocked version of PromiseClass mocked by `getMockPromise`; needed for unmocking native promises
 
-###tick(count)
+### tick(count)
 Executes all fulfillmentHandlers for each resolved promise. Executes all rejection handlers for each rejected promise. If passed a count, `tick` will repeat this procedure that many times. This is useful for deeply chained `then`s.
 
-###tickAllTheWay()
+### tickAllTheWay()
 Repeats the `tick` procedure until there are no more resolved or rejected promises with unexectued handlers. This method is discouraged when testing code that you control. Using `tick` by itself with a specific count leads to much better understanding of your code flow and fewer potential race conditions.
 
-###executeForPromise(mockedPromise)
+### executeForPromise(mockedPromise)
 Executes all fulfillmentHandlers if the mocked promise is resolved. Executes all rejectionHandlers if the mocked promise is rejected. Will not execute handlers that have already been executed.
 
-###executeForPromises(mockedPromises)
+### executeForPromises(mockedPromises)
 Calls `executeForPromise` on each mocked promise in the array of mocked promises, in order.
 
-###iterateForPromise(mockedPromise)
+### iterateForPromise(mockedPromise)
 In the event of a tree of promises created by chaining `then` off of mockedPromise, this will go down the tree and find the first level that has not yet been exectued and then execute it. If top-level callbacks on mockedPromise have not been executed, this has the same effect as `executeForPromise`. If the entire tree has already been executed, nothing happens.
 
-###iterateForPromises(mockedPromises)
+### iterateForPromises(mockedPromises)
 Calls `iterateForProimse` on each mocked promise in the array of mocked promisees, in order.
 
-###valueForPromise(mockedPromise)
+### valueForPromise(mockedPromise)
 Returns the resolved value of the mocked promise without executing any of its callbacks.
 
-##<a id="Contracts"></a>Contracts
+## <a id="Contracts"></a>Contracts
 
 Everytime `then` is called on a mocked promise, it generates a `contract` within mock promises.  A contract represents a promise and a set of handlers.  These are mostly used internally, but can be useful for debugging purposes.  
 
@@ -113,7 +113,7 @@ Returns an array of all available contracts.
 ### contracts.forPromise(mockedPromise)
 Returns an array of all contracts associated with the mocked promise. 
 
-##Examples
+## Examples
 
 To see more detailed examples, look in [mock-promises_spec.js]. Some examples are included below.
 
